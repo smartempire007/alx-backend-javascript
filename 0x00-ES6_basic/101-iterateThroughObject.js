@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 export default function iterateThroughObject(reportWithIterator) {
   let result = '';
   for (const [index, item] of Object.entries(reportWithIterator)) {
@@ -7,5 +8,6 @@ export default function iterateThroughObject(reportWithIterator) {
       result += ' | ';
     }
   }
+
   return result;
 }
