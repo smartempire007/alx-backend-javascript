@@ -7,7 +7,9 @@ export default function groceriesList() {
     Rice: 1,
     Bananas: 5,
   };
-  const groceriesEntries = Object.entries(groceries);
+  // get all keys in the object in an array 
+  const groceriesEntries = Array.from(Object.keys(groceries));
 
   groceriesEntries.map((entry) => newMap.set(entry, groceries[entry]));
+  return newMap;
 }
