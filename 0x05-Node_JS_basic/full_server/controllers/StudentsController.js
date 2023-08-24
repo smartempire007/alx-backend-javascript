@@ -1,34 +1,54 @@
-const readDatabase = require('../utils');
+import readDatabase from '../utils';
 
-class StudentsController {
-    static getAllStudents(request, response) {
+/**
+ * Students controller class
+ */
+export default class StudentsController {
+  /**
+   * Queries db for student data and sets it on response object.
+   * @param {*} request   - request object.
+   * @param {*} response  - response object.
+   */
+  static getAllStudents(request, response) {
+    const body = ['This is the list of our students'];
+    readDatabase(process.argv[2] === undefined ? '' : process.argv[2])
+      .then((courseInfo) => {
+        for (const course in courseInfo) {
+          if (Array.isArray(courseInfo[course])) {
+            const students = courseInfo[course];
+            body.push(`Number of students in ${course}: ${students.length}. List: ${students.join(', ')}`);
+          }
+        }
         response.statusCode = 200;
-        response.setHeader('Content-Type', 'text/plain');
-        response.write('This is the list of our students\n');
-        readDatabase('./database.csv').then((data) => {
-            response.write(`Number of students in CS: ${data['CS'].length}. List: ${data['CS'].join(', ')}\n`);
-            response.write(`Number of students in SWE: ${data['SWE'].length}. List: ${data['SWE'].join(', ')}\n`);
-            response.end();
-        }).catch((err) => res.write(err.message))
-        .finally(() => {
-          res.end();
+        response.send(body.join('\n'));
+      })
+      .catch((error) => {
+        response.statusCode = 500;
+        response.send(error.message);
+      });
+  }
+
+  /**
+   * Searches for students by major defined in request parameters
+   * and sets them on the response object
+   * @param {*} request  - request object
+   * @param {*} response - response object.
+   */
+  static getAllStudentsByMajor(request, response) {
+    const { major } = request.params;
+    if (major !== 'CS' && major !== 'SWE') {
+      response.statusCode = 500;
+      response.send('Major parameter must be CS or SWE');
+    } else {
+      readDatabase(process.argv[2] === undefined ? '' : process.argv[2])
+        .then((courseInfo) => {
+          response.statusCode = 200;
+          response.send(`List: ${courseInfo[major].join(', ')}`);
+        })
+        .catch((error) => {
+          response.statusCode = 500;
+          response.send(error.message);
         });
     }
-    static getAllStudentsByMajor(request, response) {
-        response.statusCode = 200;
-        response.setHeader('Content-Type', 'text/plain');
-        let { major } = request.params;
-        if (major !== 'CS' && major !== 'SWE') {
-            response.statusCode = 500;
-            response.write('Major parameter must be CS or SWE\n');
-            response.end();
-            return;
-        }
-        readDatabase('./database.csv').then((data) => {
-            response.write(`List: ${data[major].join(', ')}\n`);
-            response.end();
-        }).catch((err) => response.send(err.message));
-    }
+  }
 }
-
-export default StudentsController;
